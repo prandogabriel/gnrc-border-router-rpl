@@ -33,6 +33,14 @@
 #include "thread.h"
 #include "xtimer.h"
 
+#ifndef ADDR_IPV6
+#define ADDR_IPV6 "fec0:affe::1"
+#endif
+
+#ifndef DADOG_ID
+#define DADOG_ID (1)
+#endif
+
 #define MAIN_QUEUE_SIZE (8)
 #define UDP_BUFFER_SIZE (128U)
 #define SERVER_MSG_QUEUE_SIZE (8)
@@ -108,8 +116,8 @@ int main(void)
     ipv6_addr_t addr;
     uint8_t prefix_len;
     uint16_t flags = GNRC_NETIF_IPV6_ADDRS_FLAGS_STATE_VALID;
-    prefix_len = _get_prefix_len("2001:db8::1");
-    if (ipv6_addr_from_str(&addr, "2001:db8::1") == NULL)
+    prefix_len = _get_prefix_len(ADDR_IPV6);
+    if (ipv6_addr_from_str(&addr, ADDR_IPV6) == NULL)
     {
         printf("error: unable to parse IPv6 address.\n");
         return 1;
@@ -123,13 +131,13 @@ int main(void)
     gnrc_rpl_init(6);
     ipv6_addr_t dodag_id;
 
-    if (ipv6_addr_from_str(&dodag_id, "2001:db8::1") == NULL)
+    if (ipv6_addr_from_str(&dodag_id, ADDR_IPV6) == NULL)
     {
         printf("error: <dodag_id> must be a valid IPv6 address\n");
         return 1;
     }
 
-    gnrc_rpl_instance_t *inst = gnrc_rpl_root_init(1, &dodag_id, false, false);
+    gnrc_rpl_instance_t *inst = gnrc_rpl_root_init(DADOG_ID, &dodag_id, false, false);
     (void)inst;
 
     /* start UDP server thread */

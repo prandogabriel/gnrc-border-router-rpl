@@ -1,5 +1,7 @@
 # name of your application
-APPLICATION = gnrc_border_router
+APPLICATION = gnrc_border_router_rpl
+
+CFLAGS += -DADDR_IPV6=\"2001:660:3207:400::64\"
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= native
