@@ -34,6 +34,10 @@ USEMODULE += auto_init_gnrc_rpl
 USEMODULE += gnrc_icmpv6_echo
 USEMODULE += shell_cmd_gnrc_udp
 # Add also the shell, some shell commands
+USEMODULE += posix_sockets
+USEMODULE += sock_udp
+USEMODULE += posix_sleep
+USEMODULE += posix_inet
 USEMODULE += shell
 USEMODULE += shell_cmds_default
 USEMODULE += ps
@@ -142,7 +146,7 @@ ifeq (dhcpv6,$(PREFIX_CONF))
       CFLAGS += -DCONFIG_GNRC_DHCPV6_CLIENT_6LBR_STATIC_ROUTE=1
       # CONFIG_GNRC_DHCPV6_CLIENT_6LBR_STATIC_ROUTE=1 requires one more address
       # for `fe80::2`.
-      CFLAGS += -DCONFIG_GNRC_NETIF_IPV6_ADDRS_NUMOF=4
+      CFLAGS += -DCONFIG_GNRC_NETIF_IPV6_ADDRS_NUMOF=3
     endif
   endif
 else ifeq (static,$(PREFIX_CONF))
