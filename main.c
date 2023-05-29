@@ -43,6 +43,9 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 
 #define _IPV6_DEFAULT_PREFIX_LEN        (64U)
+#ifndef GATEWAY_IPV6_ADDR
+#define GATEWAY_IPV6_ADDR "2001:660:3207:400::64"
+#endif
 
 #define SERVER_MSG_QUEUE_SIZE   (8)
 #define SERVER_BUFFER_SIZE      (64)
@@ -64,6 +67,22 @@ static uint8_t _get_prefix_len(char *addr)
     return prefix_len;
 }
 #endif
+
+static void process_request(int sock, struct sockaddr_in6 *src, socklen_t src_len, char *request) {
+    /* Check if the message is "gateway_ipv6_request" */
+    if (strncmp(request, "gateway_ipv6_request", 20) == 0) {
+        char reply[INET6_ADDRSTRLEN];
+
+        /* Assuming you have the IPv6 address in GATEWAY_IPV6_ADDR */
+        inet_ntop(AF_INET6, &GATEWAY_IPV6_ADDR, reply, INET6_ADDRSTRLEN);
+
+        printf("Sending gateway IPv6 address: %s\n", reply);
+
+        if (sendto(sock, reply, strlen(reply), 0, (struct sockaddr *)src, src_len) < 0) {
+            puts("Error sending response");
+        }
+    }
+}
 
 
 static void *_server_thread(void *args)
@@ -92,6 +111,10 @@ static void *_server_thread(void *args)
         int res;
         struct sockaddr_in6 src;
         socklen_t src_len = sizeof(struct sockaddr_in6);
+
+        /* Clear the buffer */
+        memset(server_buffer, 0, sizeof(server_buffer));
+
         if ((res = recvfrom(server_socket, server_buffer, sizeof(server_buffer), 0,
                             (struct sockaddr *)&src, &src_len)) < 0) {
             puts("Error on receive");
@@ -102,6 +125,9 @@ static void *_server_thread(void *args)
         else {
             printf("Received data: ");
             puts(server_buffer);
+
+            /* Process the request */
+            process_request(server_socket, &src, src_len, server_buffer);
         }
     }
     return NULL;
