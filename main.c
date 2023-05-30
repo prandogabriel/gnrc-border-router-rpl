@@ -25,7 +25,9 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 static char server_stack[THREAD_STACKSIZE_DEFAULT];
 
-#define GATEWAY_IPV6_ADDR "2001:660:3207:401"
+#ifndef GATEWAY_IPV6_ADDR
+#define GATEWAY_IPV6_ADDR ("2001:660:3207:401")
+#endif
 
 #ifdef MODULE_GNRC_IPV6
 static uint8_t _get_prefix_len(char *addr)
