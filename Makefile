@@ -32,18 +32,6 @@ USEMODULE += gnrc_rpl
 USEMODULE += auto_init_gnrc_rpl
 
 # RPL config
-# Exclude Prefix Information Options from DIOs
-CFLAGS += -DCONFIG_GNRC_RPL_WITHOUT_PIO
-# Modify trickle parameters
-CFLAGS += -DCONFIG_GNRC_RPL_DEFAULT_DIO_INTERVAL_DOUBLINGS=20
-CFLAGS += -DCONFIG_GNRC_RPL_DEFAULT_DIO_INTERVAL_MIN=3
-CFLAGS += -DCONFIG_GNRC_RPL_DEFAULT_DIO_REDUNDANCY_CONSTANT=10
-# Make reception of DODAG_CONF optional when joining a DODAG. This will use the default trickle parameters until a DODAG_CONF is received from the parent. The DODAG_CONF is requested once from the parent while joining the DODAG. The standard behaviour is to request a DODAG_CONF and join only a DODAG once a DODAG_CONF is received.
-CFLAGS += -DCONFIG_GNRC_RPL_DODAG_CONF_OPTIONAL_ON_JOIN
-# Set interface for auto-initialization if more than one interface exists (gnrc_netif_highlander() returns false)
-CFLAGS += -DCONFIG_GNRC_RPL_DEFAULT_NETIF=6
-# By default, all incoming control messages get checked for validation. This validation can be disabled in case the involved RPL implementations are known to produce valid messages.
-CFLAGS += -DCONFIG_GNRC_RPL_WITHOUT_VALIDATION
 # This RPL implementation currently only supports storing mode. That means, in order to have downwards routes to all nodes the storage space within gnrc_ipv6's Neighbor Information Base must be big enough to store information for each node.
 # For a random topology of n nodes, to ensure you can reach every node from the root, set CONFIG_GNRC_IPV6_NIB_NUMOF == CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF == n.
 CFLAGS += -DCONFIG_GNRC_IPV6_NIB_NUMOF=50
