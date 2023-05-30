@@ -35,24 +35,23 @@
 #include <unistd.h>
 
 #include "net/netif.h" /* for resolving ipv6 scope */
-
+#include "net/sock/udp.h"
 #include "thread.h"
 
 #define MAIN_QUEUE_SIZE (8)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 #define _IPV6_DEFAULT_PREFIX_LEN (64U)
-#ifndef GATEWAY_IPV6_ADDR
-#define GATEWAY_IPV6_ADDR "2001:660:3207:400::64"
-#endif
 
-#define SERVER_MSG_QUEUE_SIZE (8)
-#define SERVER_BUFFER_SIZE (64)
+// #define SERVER_MSG_QUEUE_SIZE   (8)
+// #define SERVER_BUFFER_SIZE      (64)
 
-static int server_socket = -1;
-static char server_buffer[SERVER_BUFFER_SIZE];
+// static int server_socket = -1;
+// static char server_buffer[SERVER_BUFFER_SIZE];
 static char server_stack[THREAD_STACKSIZE_DEFAULT];
-static msg_t server_msg_queue[SERVER_MSG_QUEUE_SIZE];
+// static msg_t server_msg_queue[SERVER_MSG_QUEUE_SIZE];
+
+#define GATEWAY_IPV6_ADDR "2001:660:3207:401"
 
 #ifdef MODULE_GNRC_IPV6
 static uint8_t _get_prefix_len(char *addr)
@@ -68,31 +67,25 @@ static uint8_t _get_prefix_len(char *addr)
 }
 #endif
 
-static void process_request(int sock, struct sockaddr_in6 *src, socklen_t src_len, char *request)
-{
+#if 0
+static void process_request(int sock, struct sockaddr_in6 *src, socklen_t src_len, char *request) {
     /* Check if the message is "gateway_ipv6_request" */
-    if (strncmp(request, "gateway_ipv6_request", 20) == 0)
-    {
-        char reply[] = GATEWAY_IPV6_ADDR;
+    if (strncmp(request, "gateway_ipv6_request", 20) == 0) {
+        //char reply[INET6_ADDRSTRLEN];
 
-        printf("Sending gateway IPv6 address: %s\n", reply);
+        /* Assuming you have the IPv6 address in GATEWAY_IPV6_ADDR */
+        //inet_ntop(AF_INET6, &GATEWAY_IPV6_ADDR, reply, INET6_ADDRSTRLEN);
 
-         char addr_str[IPV6_ADDR_MAX_STR_LEN];
-        inet_ntop(AF_INET6, &(src->sin6_addr), addr_str, INET6_ADDRSTRLEN);
+        printf("Sending gateway IPv6 address: %s\n", GATEWAY_IPV6_ADDR);
 
-        printf("Received from address: %s, port: %d\n", addr_str, ntohs(src->sin6_port));
-
-        if (sendto(sock, reply, strlen(reply), 0, (struct sockaddr *)src, src_len) < 0)
-        {
+        if (sendto(sock, GATEWAY_IPV6_ADDR, strlen(GATEWAY_IPV6_ADDR), 0, (struct sockaddr *)src, src_len) < 0) {
             puts("Error sending response");
-        }
-        else
-        {
-            printf("Sending gateway IPv6 address: %s\n", reply);
         }
     }
 }
+#endif
 
+#if 0
 static void *_server_thread(void *args)
 {
     struct sockaddr_in6 server_addr;
@@ -104,44 +97,96 @@ static void *_server_thread(void *args)
     server_addr.sin6_family = AF_INET6;
     memset(&server_addr.sin6_addr, 0, sizeof(server_addr.sin6_addr));
     server_addr.sin6_port = htons(port);
-    if (server_socket < 0)
-    {
+    if (server_socket < 0) {
         puts("error initializing socket");
         server_socket = 0;
         return NULL;
     }
-    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
-    {
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         server_socket = -1;
         puts("error binding socket");
         return NULL;
     }
     printf("Success: started UDP server on port %" PRIu16 "\n", port);
-    while (1)
-    {
+    while (1) {
         int res;
         struct sockaddr_in6 src;
         socklen_t src_len = sizeof(struct sockaddr_in6);
-
-        /* Clear the buffer */
-        memset(server_buffer, 0, sizeof(server_buffer));
-
         if ((res = recvfrom(server_socket, server_buffer, sizeof(server_buffer), 0,
-                            (struct sockaddr *)&src, &src_len)) < 0)
-        {
+                            (struct sockaddr *)&src, &src_len)) < 0) {
             puts("Error on receive");
         }
-        else if (res == 0)
-        {
+        else if (res == 0) {
             puts("Peer did shut down");
         }
-        else
-        {
+        else {
             printf("Received data: ");
             puts(server_buffer);
+	    //process_request(server_socket, &src, src_len, server_buffer);
+    	if (strncmp(server_buffer, "gateway_ipv6_request", 20) == 0) {
+        //char reply[INET6_ADDRSTRLEN];
 
-            /* Process the request */
-            process_request(server_socket, &src, src_len, server_buffer);
+        /* Assuming you have the IPv6 address in GATEWAY_IPV6_ADDR */
+        //inet_ntop(AF_INET6, &GATEWAY_IPV6_ADDR, reply, INET6_ADDRSTRLEN);
+
+        printf("Sending gateway IPv6 address: %s\n", GATEWAY_IPV6_ADDR);
+
+    src.sin6_family = AF_INET6;
+    src.sin6_port = htons(port);
+        if (sendto(server_socket, GATEWAY_IPV6_ADDR, strlen(GATEWAY_IPV6_ADDR), 0, (struct sockaddr *)&src, src_len) < 0) {
+            puts("Error sending response");
+        }
+    }
+        }
+    }
+    return NULL;
+}
+#endif
+
+uint8_t buf[128];
+static void *_server_thread(void *args)
+{
+    (void)args;
+
+    kernel_pid_t iface_pid = 6;
+    if (gnrc_netif_get_by_pid(iface_pid) == NULL)
+    {
+        printf("unknown interface specified\n");
+        return NULL;
+    }
+
+    gnrc_rpl_init(iface_pid);
+    printf("successfully initialized RPL on interface %d\n", iface_pid);
+
+    sock_udp_ep_t local = SOCK_IPV6_EP_ANY;
+    sock_udp_t sock;
+
+    local.port = 8000;
+
+    if (sock_udp_create(&sock, &local, NULL, 0) < 0)
+    {
+        puts("Error creating UDP sock");
+        return NULL;
+    }
+
+    while (1)
+    {
+        sock_udp_ep_t remote;
+        ssize_t res;
+
+        if ((res = sock_udp_recv(&sock, buf, sizeof(buf), SOCK_NO_TIMEOUT,
+                                 &remote)) >= 0)
+        {
+            puts("Received a message");
+            /* Check if the message is "gateway_ipv6_request" */
+            if (strncmp((char *)buf, "gateway_ipv6_request", 20) == 0)
+            {
+
+                if (sock_udp_send(&sock, GATEWAY_IPV6_ADDR, strlen(GATEWAY_IPV6_ADDR), &remote) < 0)
+                {
+                    puts("Error sending reply");
+                }
+            }
         }
     }
     return NULL;
