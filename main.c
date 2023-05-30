@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2015 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
-
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Example application for demonstrating the RIOT network stack
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
-
 #include <stdio.h>
 
 #include "shell.h"
@@ -43,13 +23,7 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 #define _IPV6_DEFAULT_PREFIX_LEN (64U)
 
-// #define SERVER_MSG_QUEUE_SIZE   (8)
-// #define SERVER_BUFFER_SIZE      (64)
-
-// static int server_socket = -1;
-// static char server_buffer[SERVER_BUFFER_SIZE];
 static char server_stack[THREAD_STACKSIZE_DEFAULT];
-// static msg_t server_msg_queue[SERVER_MSG_QUEUE_SIZE];
 
 #define GATEWAY_IPV6_ADDR "2001:660:3207:401"
 
@@ -67,86 +41,10 @@ static uint8_t _get_prefix_len(char *addr)
 }
 #endif
 
-#if 0
-static void process_request(int sock, struct sockaddr_in6 *src, socklen_t src_len, char *request) {
-    /* Check if the message is "gateway_ipv6_request" */
-    if (strncmp(request, "gateway_ipv6_request", 20) == 0) {
-        //char reply[INET6_ADDRSTRLEN];
-
-        /* Assuming you have the IPv6 address in GATEWAY_IPV6_ADDR */
-        //inet_ntop(AF_INET6, &GATEWAY_IPV6_ADDR, reply, INET6_ADDRSTRLEN);
-
-        printf("Sending gateway IPv6 address: %s\n", GATEWAY_IPV6_ADDR);
-
-        if (sendto(sock, GATEWAY_IPV6_ADDR, strlen(GATEWAY_IPV6_ADDR), 0, (struct sockaddr *)src, src_len) < 0) {
-            puts("Error sending response");
-        }
-    }
-}
-#endif
-
-#if 0
-static void *_server_thread(void *args)
-{
-    struct sockaddr_in6 server_addr;
-    uint16_t port;
-    msg_init_queue(server_msg_queue, SERVER_MSG_QUEUE_SIZE);
-    server_socket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
-    (void)args;
-    port = 8000;
-    server_addr.sin6_family = AF_INET6;
-    memset(&server_addr.sin6_addr, 0, sizeof(server_addr.sin6_addr));
-    server_addr.sin6_port = htons(port);
-    if (server_socket < 0) {
-        puts("error initializing socket");
-        server_socket = 0;
-        return NULL;
-    }
-    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        server_socket = -1;
-        puts("error binding socket");
-        return NULL;
-    }
-    printf("Success: started UDP server on port %" PRIu16 "\n", port);
-    while (1) {
-        int res;
-        struct sockaddr_in6 src;
-        socklen_t src_len = sizeof(struct sockaddr_in6);
-        if ((res = recvfrom(server_socket, server_buffer, sizeof(server_buffer), 0,
-                            (struct sockaddr *)&src, &src_len)) < 0) {
-            puts("Error on receive");
-        }
-        else if (res == 0) {
-            puts("Peer did shut down");
-        }
-        else {
-            printf("Received data: ");
-            puts(server_buffer);
-	    //process_request(server_socket, &src, src_len, server_buffer);
-    	if (strncmp(server_buffer, "gateway_ipv6_request", 20) == 0) {
-        //char reply[INET6_ADDRSTRLEN];
-
-        /* Assuming you have the IPv6 address in GATEWAY_IPV6_ADDR */
-        //inet_ntop(AF_INET6, &GATEWAY_IPV6_ADDR, reply, INET6_ADDRSTRLEN);
-
-        printf("Sending gateway IPv6 address: %s\n", GATEWAY_IPV6_ADDR);
-
-    src.sin6_family = AF_INET6;
-    src.sin6_port = htons(port);
-        if (sendto(server_socket, GATEWAY_IPV6_ADDR, strlen(GATEWAY_IPV6_ADDR), 0, (struct sockaddr *)&src, src_len) < 0) {
-            puts("Error sending response");
-        }
-    }
-        }
-    }
-    return NULL;
-}
-#endif
-
-uint8_t buf[128];
 static void *_server_thread(void *args)
 {
     (void)args;
+    uint8_t buf[128];
 
     kernel_pid_t iface_pid = 6;
     if (gnrc_netif_get_by_pid(iface_pid) == NULL)
