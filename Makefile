@@ -34,10 +34,9 @@ USEMODULE += auto_init_gnrc_rpl
 # RPL config
 # This RPL implementation currently only supports storing mode. That means, in order to have downwards routes to all nodes the storage space within gnrc_ipv6's Neighbor Information Base must be big enough to store information for each node.
 # For a random topology of n nodes, to ensure you can reach every node from the root, set CONFIG_GNRC_IPV6_NIB_NUMOF == CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF == n.
-CFLAGS += -DCONFIG_GNRC_IPV6_NIB_NUMOF=50
-CFLAGS += -DCONFIG_GNRC_IPV6_NIB_OFFL_NUMOF=50
+CFLAGS += -DCONFIG_GNRC_IPV6_NIB_NUMOF=32
+CFLAGS += -DCONFIG_GNRC_IPV6_NIB_OFFL_NUMOF=32
 # If you want to allow for alternative parents, increase the number of default routers in the NIB.
-CFLAGS += -DCONFIG_GNRC_IPV6_NIB_DEFAULT_ROUTER_NUMOF=2
 
 # Additional networking modules that can be dropped if not needed
 USEMODULE += gnrc_icmpv6_echo
