@@ -29,6 +29,10 @@ static char server_stack[THREAD_STACKSIZE_DEFAULT];
 #define GATEWAY_IPV6_ADDR ("2001:660:3207:400::64")
 #endif
 
+#ifndef INSTANCE_ID
+#define INSTANCE_ID (1U)
+#endif
+
 #ifndef ROOT_IPV6_ADDR
 #define ROOT_IPV6_ADDR ("2001:db8::1")
 #endif
@@ -128,7 +132,7 @@ int main(void)
         printf("error: <dodag_id> must be a valid IPv6 address\n");
         return 1;
     }
-    gnrc_rpl_instance_t *inst = gnrc_rpl_root_init(1, &dodag_id, false, false);
+    gnrc_rpl_instance_t *inst = gnrc_rpl_root_init((uint8_t)INSTANCE_ID, &dodag_id, false, false);
     (void)inst;
 
     /* start server (which means registering pktdump for the chosen port) */
