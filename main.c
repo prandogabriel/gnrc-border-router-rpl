@@ -26,7 +26,11 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 static char server_stack[THREAD_STACKSIZE_DEFAULT];
 
 #ifndef GATEWAY_IPV6_ADDR
-#define GATEWAY_IPV6_ADDR ("2001:660:3207:401")
+#define GATEWAY_IPV6_ADDR ("2001:660:3207:400::64")
+#endif
+
+#ifndef ROOT_IPV6_ADDR
+#define ROOT_IPV6_ADDR ("2001:db8::1")
 #endif
 
 #ifdef MODULE_GNRC_IPV6
@@ -104,8 +108,8 @@ int main(void)
     ipv6_addr_t addr;
     uint8_t prefix_len;
     uint16_t flags = GNRC_NETIF_IPV6_ADDRS_FLAGS_STATE_VALID;
-    prefix_len = _get_prefix_len("2001:db8::1");
-    if (ipv6_addr_from_str(&addr, "2001:db8::1") == NULL)
+    prefix_len = _get_prefix_len(ROOT_IPV6_ADDR);
+    if (ipv6_addr_from_str(&addr, ROOT_IPV6_ADDR) == NULL)
     {
         printf("error: unable to parse IPv6 address.\n");
         return 1;
@@ -119,7 +123,7 @@ int main(void)
     gnrc_rpl_init(6);
     ipv6_addr_t dodag_id;
 
-    if (ipv6_addr_from_str(&dodag_id, "2001:db8::1") == NULL)
+    if (ipv6_addr_from_str(&dodag_id, ROOT_IPV6_ADDR) == NULL)
     {
         printf("error: <dodag_id> must be a valid IPv6 address\n");
         return 1;

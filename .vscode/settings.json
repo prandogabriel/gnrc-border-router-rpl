@@ -8,6 +8,7 @@
     "*.webpack.js": "webpack",
     "*.list": "c",
     "udp.h": "c",
-    "socket.h": "c"
+    "socket.h": "c",
+    "rpl.h": "c"
   }
 }
