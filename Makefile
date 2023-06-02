@@ -3,7 +3,6 @@ APPLICATION = gnrc_border_router_rpl
 
 CFLAGS += -DGATEWAY_IPV6_ADDR=\"2001:660:3207:400::64\"
 CFLAGS += -DROOT_IPV6_ADDR=\"2001:db8::1\"
-CFLAGS += -INSTANCE_ID=1
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= native
