@@ -85,7 +85,8 @@ static void *_server_thread(void *args)
         if ((res = sock_udp_recv(&sock, buf, sizeof(buf), SOCK_NO_TIMEOUT,
                                  &remote)) >= 0)
         {
-            puts("Received a message");
+            puts("Received a message ");
+            puts((char *)buf);
             /* Check if the message is "gateway_ipv6_request" */
             if (strncmp((char *)buf, "gateway_ipv6_request", 20) == 0)
             {
